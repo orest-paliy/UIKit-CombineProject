@@ -64,7 +64,7 @@ class AuthViewController: UIViewController {
         tf.backgroundColor = .tertiarySystemBackground
         tf.placeholder = "Please confirm password"
         tf.layer.cornerRadius = 20
-        let action = UIAction{[weak self] _ in self?.viewModel.password = tf.text ?? "" }
+        let action = UIAction{[weak self] _ in self?.viewModel.passwordConfirmation = tf.text ?? "" }
         tf.addAction(action, for: .editingChanged)
         return tf
     }()
@@ -157,6 +157,13 @@ class AuthViewController: UIViewController {
                 self?.authButton.isEnabled = $0
                 self?.viewModel.error = nil
             }
+            .store(in: &cancellables)
+        
+        viewModel.$passwordConfirmation
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: {[weak self] _ in
+                self?.viewModel.error = nil
+            })
             .store(in: &cancellables)
         
         //Page state

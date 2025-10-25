@@ -16,6 +16,7 @@ final class AuthViewModel{
     
     @Published var email: String = ""
     @Published var password: String = ""
+    @Published var passwordConfirmation: String = ""
     
     @Published var canActivateButton: Bool = false
     @Published var isPageInSignInState: Bool = true
@@ -36,7 +37,11 @@ final class AuthViewModel{
         do{
             var receivedEmail: String?
             if isPageInSignInState{
-                receivedEmail = try authService.signIn(email: email.lowercased(), password: password.lowercased())
+                if(password == passwordConfirmation){
+                    receivedEmail = try authService.signIn(email: email.lowercased(), password: password.lowercased())
+                }else{
+                    throw AuthError.badPasswordConfirmation
+                }
             }else{
                 receivedEmail = try authService.logIn(email: email.lowercased(), password: password.lowercased())
             }

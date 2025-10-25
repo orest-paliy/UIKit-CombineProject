@@ -11,6 +11,7 @@ enum AuthError: Error{
     case userNotFound
     case passwordMismatch
     case userAlreadyExists
+    case badPasswordConfirmation
     
     var localizedDescription: String{
         switch self {
@@ -20,6 +21,8 @@ enum AuthError: Error{
             return "Password is incorrect"
         case .userAlreadyExists:
             return "User with such email address already exists"
+        case .badPasswordConfirmation:
+            return "Bad password confirmation"
         }
     }
 }
