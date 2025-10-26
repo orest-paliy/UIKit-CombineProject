@@ -29,7 +29,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 if let self{
                     var vcForDisplay: UIViewController
                     if isUserAuth{
-                        vcForDisplay = CombineMainViewController(authObserver: self.authObserver)
+                        let discoverVC = DiscoverMoviesViewController(
+                            movieService: MovieService(),
+                            imgLoadingService: ImageLoaderService()
+                        )
+                        vcForDisplay = UINavigationController(rootViewController: discoverVC)
                     }else{
                         vcForDisplay = AuthViewController(authObserver: self.authObserver)
                     }

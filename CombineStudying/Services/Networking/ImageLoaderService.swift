@@ -1,0 +1,29 @@
+//
+//  ImageLoader.swift
+//  CombineStudying
+//
+//  Created by Orest Palii on 26.10.2025.
+//
+
+import UIKit
+
+final class ImageLoaderService {
+    private let cache: NSCache<NSString, UIImage> = NSCache()
+    
+    func loadImage(by url: String) async throws -> UIImage{
+        if let img = cache.object(forKey: NSString(string: url)){ return img }
+        else{
+            var responseImg: UIImage
+            let url = URL(string: url)!
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let img = UIImage(data: data){
+                responseImg =  img
+            }else{
+                responseImg = UIImage(systemName: "photo.badge.exclamationmark.fill")!
+            }
+            
+            cache.setObject(responseImg, forKey: NSString(string: url.absoluteString))
+            return responseImg
+        }
+    }
+}

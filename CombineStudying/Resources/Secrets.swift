@@ -8,7 +8,7 @@
 import Foundation
 
 struct Secrets{
-    lazy var movieLibraryAPIKey: String = {
+    static var movieLibraryAPIKey: String = {
         guard let url = Bundle.main.url(forResource: "MovieLibraryAPIKey", withExtension: "plist"),
               let dict = NSDictionary(contentsOf: url) as? [String: Any],
               let key = dict["MOVIE_LIBRARY_API_KEY"] as? String
