@@ -63,7 +63,7 @@ final class MovieTableViewCell: UITableViewCell{
         return lbl
     }
     
-    func configure(movie: Movie, imgLoadingService: ImageLoaderService){
+    func configure(movie: Movie, imgLoadingService: ImageLoadingService){
         loadImage(imgLoadingService, movie: movie)
         stackView.addArrangedSubview(createLabel(text: movie.title))
         stackView.addArrangedSubview(createLabel(text: movie.overview))
@@ -81,7 +81,7 @@ final class MovieTableViewCell: UITableViewCell{
     //MARK: Networking
     var imgLoadingTask: Task<UIImage, Error>?
     
-    func loadImage(_ loadingService: ImageLoaderService, movie: Movie){
+    func loadImage(_ loadingService: ImageLoadingService, movie: Movie){
         imgLoadingTask = Task{
             let image = try await loadingService.loadImage(by: movie.posterURL)
             movieImage.image = image

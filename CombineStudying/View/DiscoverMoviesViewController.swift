@@ -11,12 +11,12 @@ import Combine
 class DiscoverMoviesViewController: UIViewController {
     //MARK: Dependencies
     let viewModel: DiscoverMoviewViewModel
-    let imgLoadingService: ImageLoaderService
+    let imgLoadingService: ImageLoadingService
     var canvellables: Set<AnyCancellable> = []
-    let cdMovieService: CDMoviesServiceProtocol
+    let cdMovieService: CDMovieRepositoryProtocol
     
-    init(movieService: MovieServiceProtocol, imgLoadingService: ImageLoaderService, cdMovieService: CDMoviesServiceProtocol) {
-        self.viewModel = DiscoverMoviewViewModel(movieService: movieService)
+    init(imgLoadingService: ImageLoadingService, cdMovieService: CDMovieRepositoryProtocol, networkMovieService: NetworkMovieServiceProtocol) {
+        self.viewModel = DiscoverMoviewViewModel(movieService: networkMovieService)
         self.imgLoadingService = imgLoadingService
         self.cdMovieService = cdMovieService
         super.init(nibName: nil, bundle: nil)
@@ -98,9 +98,10 @@ extension DiscoverMoviesViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let vc = MovieOverviewViewController(
             movie: viewModel.loadedMovies[indexPath.row],
+            movieId: viewModel.loadedMovies[indexPath.row].id,
             imgLoadingService: imgLoadingService,
-            cdMovieService: cdMovieService
-            )
+            cdMovieService: cdMovieService,
+            networkMovieService: viewModel.movieService)
         navigationController?.pushViewController(vc, animated: true)
     }
 }

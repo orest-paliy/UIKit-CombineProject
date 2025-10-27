@@ -13,22 +13,22 @@ final class AuthObserver{
     private var userEmail: String?
     
     private let authKeyPath = "isUserAithenficated"
-    private let userEmailPath = "AuthenficatedUserEmail"
+    static let userEmailPath = "AuthenficatedUserEmail"
     
     init(){
         checkIfUserIsAuthentificated()
     }
     
-    func setUserAuth(active: Bool, userEmail: String){
+    func setUserAuth(active: Bool, userEmail: String = UserDefaults.standard.string(forKey: userEmailPath) ?? ""){
         UserDefaults.standard.set(active, forKey: authKeyPath)
-        UserDefaults.standard.set(userEmail, forKey: userEmailPath)
+        UserDefaults.standard.set(userEmail, forKey: AuthObserver.userEmailPath)
         checkIfUserIsAuthentificated()
     }
     
     private func checkIfUserIsAuthentificated(){
         isUserAuthentificated = UserDefaults.standard.bool(forKey: authKeyPath)
         if isUserAuthentificated{
-            userEmail = UserDefaults.standard.string(forKey: userEmailPath)
+            userEmail = UserDefaults.standard.string(forKey: AuthObserver.userEmailPath)
         }
     }
 }

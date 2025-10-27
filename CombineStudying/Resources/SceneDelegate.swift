@@ -12,9 +12,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     
-    var cancellable: AnyCancellable?
-    let authObserver = AuthObserver()
-    let authService = CDAuthService(config: CoreDataConfig())
+    private let authObserver = AuthObserver()
+    private let networkMovieService = NetworkMovieService()
+    private let imageLoadingService = ImageLoadingService()
+    private let authService = CDAuthService(config: CDConfig())
+    private lazy var cdMovieService = CDMovieRepository(authService: authService)
+
+    private var cancellable: AnyCancellable?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -31,19 +35,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     if let self{
                         //TAB Items
                         let tabVC = UITabBarController()
+                        
                         let discoverTabNavVC = UINavigationController(
                             rootViewController:
                                 DiscoverMoviesViewController(
-                                    movieService: MovieService(),
-                                    imgLoadingService: ImageLoaderService(),
-                                    cdMovieService: CDMoviesService(authService: authService)
+                                    imgLoadingService: imageLoadingService,
+                                    cdMovieService: cdMovieService,
+                                    networkMovieService: networkMovieService
                                 )
                         )
+                        let profileTabNavVC = UINavigationController(
+                            rootViewController: ProfileViewController(
+                                viewModel: ProfileViewModel(
+                                    authService: authService,
+                                    authObserver: authObserver,
+                                    imgLoadingService: imageLoadingService,
+                                    cdMovieService: cdMovieService
+                                ),
+                                networkMovieService: networkMovieService
+                            )
+                        )
+                        
                         discoverTabNavVC.tabBarItem = UITabBarItem(title: "Discover", image: UIImage(systemName: "magnifyingglass"), tag: 1)
-                        
-                        let profileTabNavVC = UINavigationController(rootViewController: ProfileViewController())
                         profileTabNavVC.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(systemName: "person"), tag: 2)
-                        
                         tabVC.viewControllers = [discoverTabNavVC, profileTabNavVC]
                         
                         //Auth checking

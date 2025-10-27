@@ -12,23 +12,38 @@ final class MovieOverviewViewModel{
     @Published var posterImg: UIImage?
     @Published var backgroundImg: UIImage?
     @Published var isMovieSaved: Bool = false
+    @Published var currentMovie: Movie?
     
-    let currentMovie: Movie
-    let imgLoadingService: ImageLoaderService
-    let cdMovieService: CDMoviesServiceProtocol
+    let movieId: Int
+    let networkMovieService: NetworkMovieServiceProtocol
+    let imgLoadingService: ImageLoadingService
+    let cdMovieService: CDMovieRepositoryProtocol
     
-    init(currentMovie: Movie, imgLoadingService: ImageLoaderService, cdMovieService: CDMoviesServiceProtocol) {
+    init(currentMovie: Movie?, movieId: Int, imgLoadingService: ImageLoadingService, cdMovieService: CDMovieRepositoryProtocol, networkMovieService: NetworkMovieServiceProtocol) {
         self.currentMovie = currentMovie
+        self.movieId = movieId
         self.imgLoadingService = imgLoadingService
         self.cdMovieService = cdMovieService
+        self.networkMovieService = networkMovieService
         
         checkIfMovieIsSaved()
     }
     
-    func loadPosterAndBackground(){
+    func validateMovie(){
+        if let movie = currentMovie {
+            loadPosterAndBackground(movie: movie)
+        }else{
+            Task{
+                currentMovie = try await networkMovieService.fetchMovie(by: movieId)
+                loadPosterAndBackground(movie: currentMovie!)
+            }
+        }
+    }
+    
+    func loadPosterAndBackground(movie: Movie){
         Task{
-            async let poster = try? imgLoadingService.loadImage(by: currentMovie.posterURL)
-            async let background = try? imgLoadingService.loadImage(by: currentMovie.backImgURL)
+            async let poster = try? imgLoadingService.loadImage(by: movie.posterURL)
+            async let background = try? imgLoadingService.loadImage(by: movie.backImgURL)
             
             let result = await (poster, background)
             self.posterImg = result.0
@@ -38,7 +53,7 @@ final class MovieOverviewViewModel{
     
     func saveMovie(){
         do{
-            let _ = try cdMovieService.save(movie: currentMovie)
+            let _ = try cdMovieService.save(movie: currentMovie!)
         }catch{
             print(error)
         }
@@ -48,7 +63,7 @@ final class MovieOverviewViewModel{
     
     func removeMovieFromSaved(){
         do{
-            let _ = try cdMovieService.remove(by: currentMovie.id)
+            let _ = try cdMovieService.remove(by: movieId)
         }catch{
             print(error)
         }
@@ -57,6 +72,6 @@ final class MovieOverviewViewModel{
     }
     
     func checkIfMovieIsSaved(){
-        isMovieSaved = cdMovieService.isMovieSaved(movieId: currentMovie.id)
+        isMovieSaved = cdMovieService.isMovieSaved(movieId: movieId)
     }
 }

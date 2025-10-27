@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 final class DiscoverMoviewViewModel{
-    private let movieService: MovieServiceProtocol
+    let movieService: NetworkMovieServiceProtocol
     private var cancellables: Set<AnyCancellable> = []
     
     @Published var searchPhrase: String = ""
@@ -18,7 +18,7 @@ final class DiscoverMoviewViewModel{
     
     var page = 1
     
-    init(movieService: MovieServiceProtocol) {
+    init(movieService: NetworkMovieServiceProtocol) {
         self.movieService = movieService
         subscribeForSearchChanges()
     }

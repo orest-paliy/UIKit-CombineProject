@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-final class CoreDataConfig{
+final class CDConfig{
     private let container = NSPersistentContainer(name: "Auth")
     var viewContext: NSManagedObjectContext{
         container.viewContext

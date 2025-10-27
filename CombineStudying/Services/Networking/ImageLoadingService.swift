@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ImageLoaderService: NSObject {
+final class ImageLoadingService: NSObject {
     
     override init() {
         cache = NSCache()
@@ -37,7 +37,7 @@ final class ImageLoaderService: NSObject {
     }
 }
 
-extension ImageLoaderService: NSCacheDelegate{
+extension ImageLoadingService: NSCacheDelegate{
     func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
         if let img = obj as? UIImage {
             print(img.size)

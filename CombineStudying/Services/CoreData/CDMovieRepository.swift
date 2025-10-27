@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-protocol CDMoviesServiceProtocol{
+protocol CDMovieRepositoryProtocol{
     func remove(by movieId: Int) throws -> Int
     func save(movie: Movie) throws -> Int
     func isMovieSaved(movieId: Int) -> Bool
@@ -16,7 +16,7 @@ protocol CDMoviesServiceProtocol{
     init(authService: AuthServiceProtocol)
 }
 
-final class CDMoviesService: CDMoviesServiceProtocol{
+final class CDMovieRepository: CDMovieRepositoryProtocol{
     private let authService: AuthServiceProtocol
     
     init(authService: AuthServiceProtocol){

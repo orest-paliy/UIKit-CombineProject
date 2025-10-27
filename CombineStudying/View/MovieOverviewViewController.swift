@@ -14,11 +14,13 @@ final class MovieOverviewViewController: UIViewController{
     let viewModel: MovieOverviewViewModel
     var cancellables: Set<AnyCancellable> = []
     
-    init(movie: Movie, imgLoadingService: ImageLoaderService, cdMovieService: CDMoviesServiceProtocol) {
+    init(movie: Movie?, movieId: Int, imgLoadingService: ImageLoadingService, cdMovieService: CDMovieRepositoryProtocol, networkMovieService: NetworkMovieServiceProtocol) {
         self.viewModel = MovieOverviewViewModel(
             currentMovie: movie,
+            movieId: movieId,
             imgLoadingService: imgLoadingService,
-            cdMovieService: cdMovieService
+            cdMovieService: cdMovieService,
+            networkMovieService: networkMovieService
         )
         super.init(nibName: nil, bundle: nil)
     }
@@ -102,7 +104,6 @@ final class MovieOverviewViewController: UIViewController{
             movieDescTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
         
-        navigationItem.title = viewModel.currentMovie.title
         
         view.addSubview(saveButton)
         
@@ -115,8 +116,7 @@ final class MovieOverviewViewController: UIViewController{
     }
     
     func configure(){
-        movieDescTitle.text = viewModel.currentMovie.overview
-        viewModel.loadPosterAndBackground()
+        viewModel.validateMovie()
         
         viewModel.$posterImg
             .receive(on: DispatchQueue.main)
@@ -138,18 +138,29 @@ final class MovieOverviewViewController: UIViewController{
                 self?.saveButton.setTitle(isSaved ? "Remove" : "Save", for: .normal)
             })
             .store(in: &cancellables)
+        
+        viewModel.$currentMovie
+            .sink { [weak self] movie in
+                if let movie{
+                    self?.navigationItem.title = movie.title
+                    self?.movieDescTitle.text = movie.overview
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func applyGradient(for imageView: UIImageView){
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = imageView.bounds
-        gradientLayer.colors = [
-            UIColor.systemBackground.withAlphaComponent(0).cgColor,
-            UIColor.systemBackground.withAlphaComponent(1).cgColor
-        ]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        if imageView.layer.sublayers == nil{
+            let gradientLayer = CAGradientLayer()
+            gradientLayer.frame = imageView.bounds
+            gradientLayer.colors = [
+                UIColor.systemBackground.withAlphaComponent(0).cgColor,
+                UIColor.systemBackground.withAlphaComponent(1).cgColor
+            ]
+            gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+            gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
 
-        imageView.layer.addSublayer(gradientLayer)
+            imageView.layer.addSublayer(gradientLayer)
+        }
     }
 }

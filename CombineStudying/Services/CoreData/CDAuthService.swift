@@ -9,9 +9,9 @@ import Foundation
 import CoreData
 
 final class CDAuthService: AuthServiceProtocol{
-    var cdConfig: CoreDataConfig
+    var cdConfig: CDConfig
     
-    init(config: CoreDataConfig) {
+    init(config: CDConfig) {
         self.cdConfig = config
     }
     
