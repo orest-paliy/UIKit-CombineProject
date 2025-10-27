@@ -14,8 +14,12 @@ final class MovieOverviewViewController: UIViewController{
     let viewModel: MovieOverviewViewModel
     var cancellables: Set<AnyCancellable> = []
     
-    init(movie: Movie, imgLoadingService: ImageLoaderService) {
-        self.viewModel = MovieOverviewViewModel(currentMovie: movie, imgLoadingService: imgLoadingService)
+    init(movie: Movie, imgLoadingService: ImageLoaderService, cdMovieService: CDMoviesServiceProtocol) {
+        self.viewModel = MovieOverviewViewModel(
+            currentMovie: movie,
+            imgLoadingService: imgLoadingService,
+            cdMovieService: cdMovieService
+        )
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -41,6 +45,29 @@ final class MovieOverviewViewController: UIViewController{
         return imgV
     }()
     
+    lazy var movieDescTitle: UILabel = {
+        let lbl = UILabel()
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        lbl.numberOfLines = 0
+        return lbl
+    }()
+    
+    lazy var saveButton: UIButton = {
+        let btn = UIButton()
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.layer.cornerRadius = 20
+        
+        btn.addAction(UIAction{[weak viewModel] _ in
+            if viewModel?.isMovieSaved ?? false {
+                viewModel?.removeMovieFromSaved()
+            }else{
+                viewModel?.saveMovie()
+            }
+        }, for: .touchUpInside)
+        
+        return btn
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
@@ -57,6 +84,7 @@ final class MovieOverviewViewController: UIViewController{
         
         view.addSubview(backgroundImageView)
         view.addSubview(posterImageView)
+        view.addSubview(movieDescTitle)
         
         NSLayoutConstraint.activate([
             backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -64,14 +92,30 @@ final class MovieOverviewViewController: UIViewController{
             backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundImageView.heightAnchor.constraint(equalToConstant: 300),
             
-            posterImageView.topAnchor.constraint(equalTo: backgroundImageView.bottomAnchor, constant: -200),
+            posterImageView.topAnchor.constraint(equalTo: backgroundImageView.bottomAnchor, constant: -180),
             posterImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             posterImageView.heightAnchor.constraint(equalToConstant: 300),
-            posterImageView.widthAnchor.constraint(equalToConstant: 200)
+            posterImageView.widthAnchor.constraint(equalToConstant: 200),
+            
+            movieDescTitle.topAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: 16),
+            movieDescTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            movieDescTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+        ])
+        
+        navigationItem.title = viewModel.currentMovie.title
+        
+        view.addSubview(saveButton)
+        
+        NSLayoutConstraint.activate([
+            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            saveButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
     
     func configure(){
+        movieDescTitle.text = viewModel.currentMovie.overview
         viewModel.loadPosterAndBackground()
         
         viewModel.$posterImg
@@ -86,6 +130,13 @@ final class MovieOverviewViewController: UIViewController{
             .sink { [weak backgroundImageView] image in
                 backgroundImageView?.image = image
             }
+            .store(in: &cancellables)
+        
+        viewModel.$isMovieSaved
+            .sink(receiveValue: {[weak self] isSaved in
+                self?.saveButton.backgroundColor = isSaved ? .systemRed : .systemGreen
+                self?.saveButton.setTitle(isSaved ? "Remove" : "Save", for: .normal)
+            })
             .store(in: &cancellables)
     }
     

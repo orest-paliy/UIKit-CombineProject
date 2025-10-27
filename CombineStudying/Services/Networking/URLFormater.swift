@@ -21,5 +21,6 @@ final class URLFormater{
     
     enum Endpoint: String{
         case discover = "discover/movie"
+        case search = "search/movie"
     }
 }

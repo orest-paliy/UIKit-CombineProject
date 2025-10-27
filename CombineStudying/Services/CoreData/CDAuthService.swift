@@ -9,10 +9,14 @@ import Foundation
 import CoreData
 
 final class CDAuthService: AuthServiceProtocol{
-    let cdConfig = CoreDataConfig()
+    var cdConfig: CoreDataConfig
+    
+    init(config: CoreDataConfig) {
+        self.cdConfig = config
+    }
     
     func signIn(email: String, password: String) throws -> String {
-        if let user = fetchUserBy(email: email){ throw AuthError.userAlreadyExists }
+        if let _ = fetchUserBy(email: email){ throw AuthError.userAlreadyExists }
         
         let user = User(context: cdConfig.viewContext)
         user.email = email
@@ -32,7 +36,7 @@ final class CDAuthService: AuthServiceProtocol{
         }
     }
     
-    private func fetchUserBy(email: String) -> User?{
+    func fetchUserBy(email: String) -> User?{
         let request = User.fetchRequest()
         let predicate = NSPredicate(format: "email == %@", email)
         request.predicate = predicate

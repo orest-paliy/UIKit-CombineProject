@@ -13,10 +13,12 @@ class DiscoverMoviesViewController: UIViewController {
     let viewModel: DiscoverMoviewViewModel
     let imgLoadingService: ImageLoaderService
     var canvellables: Set<AnyCancellable> = []
+    let cdMovieService: CDMoviesServiceProtocol
     
-    init(movieService: MovieServiceProtocol, imgLoadingService: ImageLoaderService) {
+    init(movieService: MovieServiceProtocol, imgLoadingService: ImageLoaderService, cdMovieService: CDMoviesServiceProtocol) {
         self.viewModel = DiscoverMoviewViewModel(movieService: movieService)
         self.imgLoadingService = imgLoadingService
+        self.cdMovieService = cdMovieService
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -28,9 +30,11 @@ class DiscoverMoviesViewController: UIViewController {
     lazy var tableView: UITableView = {
         let tbV = UITableView()
         tbV.translatesAutoresizingMaskIntoConstraints = false
+        
         tbV.register(MovieTableViewCell.self, forCellReuseIdentifier: MovieTableViewCell.reuseIdentifier)
         tbV.dataSource = self
         tbV.delegate = self
+        
         return tbV
     }()
     
@@ -39,6 +43,10 @@ class DiscoverMoviesViewController: UIViewController {
         configureUI()
         
         loadMovies()
+        
+        let searchController = UISearchController()
+        searchController.searchResultsUpdater = self
+        navigationItem.searchController = searchController
     }
     
     private func configureUI(){
@@ -74,13 +82,13 @@ extension DiscoverMoviesViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: MovieTableViewCell.reuseIdentifier, for: indexPath) as! MovieTableViewCell
         cell.configure(movie: viewModel.loadedMovies[indexPath.row], imgLoadingService: imgLoadingService)
+        cell.selectionStyle = .none
         return cell
     }
     
     //MARK: Pagination
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == viewModel.loadedMovies.count - 5{
-            print("Need to start loading")
+        if viewModel.searchPhrase.isEmpty && indexPath.row == viewModel.loadedMovies.count - 5{
             viewModel.page += 1
             viewModel.loadMovies()
         }
@@ -88,8 +96,19 @@ extension DiscoverMoviesViewController: UITableViewDataSource, UITableViewDelega
     
     //MARK: onClick
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = MovieOverviewViewController(movie: viewModel.loadedMovies[indexPath.row], imgLoadingService: imgLoadingService)
+        let vc = MovieOverviewViewController(
+            movie: viewModel.loadedMovies[indexPath.row],
+            imgLoadingService: imgLoadingService,
+            cdMovieService: cdMovieService
+            )
         navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
+//MARK: SearchControllerUpdater
+extension DiscoverMoviesViewController: UISearchResultsUpdating{
+    func updateSearchResults(for searchController: UISearchController) {
+        viewModel.searchPhrase = searchController.searchBar.text ?? ""
     }
 }
 

@@ -13,10 +13,10 @@ class AuthViewController: UIViewController {
     var cancellables: Set<AnyCancellable> = []
     
     
-    init(authObserver: AuthObserver){
+    init(authObserver: AuthObserver, authService: AuthServiceProtocol){
         viewModel = AuthViewModel(
             validationService: ValidationService(),
-            authService: CDAuthService(),
+            authService: authService,
             authObserver: authObserver,
         )
         super.init(nibName: nil, bundle: nil)

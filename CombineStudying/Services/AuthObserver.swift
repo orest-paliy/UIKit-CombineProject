@@ -10,17 +10,25 @@ import Combine
 
 final class AuthObserver{
     @Published var isUserAuthentificated: Bool = false
-    private let authKeyPath = "isUserAithentificated"
+    private var userEmail: String?
+    
+    private let authKeyPath = "isUserAithenficated"
+    private let userEmailPath = "AuthenficatedUserEmail"
+    
     init(){
         checkIfUserIsAuthentificated()
     }
     
-    func setUserAuth(active: Bool){
+    func setUserAuth(active: Bool, userEmail: String){
         UserDefaults.standard.set(active, forKey: authKeyPath)
+        UserDefaults.standard.set(userEmail, forKey: userEmailPath)
         checkIfUserIsAuthentificated()
     }
     
     private func checkIfUserIsAuthentificated(){
         isUserAuthentificated = UserDefaults.standard.bool(forKey: authKeyPath)
+        if isUserAuthentificated{
+            userEmail = UserDefaults.standard.string(forKey: userEmailPath)
+        }
     }
 }

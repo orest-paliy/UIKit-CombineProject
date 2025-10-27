@@ -11,8 +11,8 @@ struct Movie: Codable{
     let id: Int
     let title: String
     let overview: String
-    let posterPath: String
-    let backImgPath: String
+    let posterPath: String?
+    let backImgPath: String?
     
     enum CodingKeys: String, CodingKey{
         case id = "id"
@@ -23,11 +23,13 @@ struct Movie: Codable{
     }
     
     var posterURL: String{
-        URLFormater.imgBaseURL + posterPath
+        guard let posterPath else {return "https://media.tenor.com/WK4ixyY7dugAAAAe/cri-cry.png"}
+        return URLFormater.imgBaseURL + posterPath
     }
     
     var backImgURL: String{
-        URLFormater.imgBaseURL + backImgPath
+        guard let backImgPath else {return "https://media.tenor.com/WK4ixyY7dugAAAAe/cri-cry.png"}
+        return URLFormater.imgBaseURL + backImgPath
     }
 }
 

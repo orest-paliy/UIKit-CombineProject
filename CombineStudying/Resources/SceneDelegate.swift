@@ -14,6 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var cancellable: AnyCancellable?
     let authObserver = AuthObserver()
+    let authService = CDAuthService(config: CoreDataConfig())
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -21,26 +22,42 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let scene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: scene)
-        window?.rootViewController = AuthViewController(authObserver: authObserver)
+        window?.rootViewController = AuthViewController(authObserver: authObserver, authService: authService)
         window?.makeKeyAndVisible()
         
         cancellable = authObserver.$isUserAuthentificated
-            .sink(receiveValue: {[weak self] isUserAuth in
-                if let self{
-                    var vcForDisplay: UIViewController
-                    if isUserAuth{
-                        let discoverVC = DiscoverMoviesViewController(
-                            movieService: MovieService(),
-                            imgLoadingService: ImageLoaderService()
+            .sink(
+                receiveValue: {[weak self] isUserAuth in
+                    if let self{
+                        //TAB Items
+                        let tabVC = UITabBarController()
+                        let discoverTabNavVC = UINavigationController(
+                            rootViewController:
+                                DiscoverMoviesViewController(
+                                    movieService: MovieService(),
+                                    imgLoadingService: ImageLoaderService(),
+                                    cdMovieService: CDMoviesService(authService: authService)
+                                )
                         )
-                        vcForDisplay = UINavigationController(rootViewController: discoverVC)
-                    }else{
-                        vcForDisplay = AuthViewController(authObserver: self.authObserver)
+                        discoverTabNavVC.tabBarItem = UITabBarItem(title: "Discover", image: UIImage(systemName: "magnifyingglass"), tag: 1)
+                        
+                        let profileTabNavVC = UINavigationController(rootViewController: ProfileViewController())
+                        profileTabNavVC.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(systemName: "person"), tag: 2)
+                        
+                        tabVC.viewControllers = [discoverTabNavVC, profileTabNavVC]
+                        
+                        //Auth checking
+                        var vcForDisplay: UIViewController
+                        if isUserAuth{
+                            vcForDisplay = tabVC
+                        }else{
+                            vcForDisplay = AuthViewController(authObserver: self.authObserver, authService: authService)
+                        }
+                        
+                        self.window?.rootViewController = vcForDisplay
                     }
-                    
-                    self.window?.rootViewController = vcForDisplay
                 }
-            })
+            )
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

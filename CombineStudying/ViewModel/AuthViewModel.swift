@@ -46,8 +46,8 @@ final class AuthViewModel{
                 receivedEmail = try authService.logIn(email: email.lowercased(), password: password.lowercased())
             }
             
-            if let _ = receivedEmail{
-                authObserver.setUserAuth(active: true)
+            if let emailForSave = receivedEmail{
+                authObserver.setUserAuth(active: true, userEmail: emailForSave)
             }
         }catch{
             print(error)

@@ -7,8 +7,17 @@
 
 import UIKit
 
-final class ImageLoaderService {
-    private let cache: NSCache<NSString, UIImage> = NSCache()
+final class ImageLoaderService: NSObject {
+    
+    override init() {
+        cache = NSCache()
+        super.init()
+        
+        cache.delegate = self
+        cache.countLimit = 30
+    }
+    
+    private let cache: NSCache<NSString, UIImage>
     
     func loadImage(by url: String) async throws -> UIImage{
         if let img = cache.object(forKey: NSString(string: url)){ return img }
@@ -24,6 +33,14 @@ final class ImageLoaderService {
             
             cache.setObject(responseImg, forKey: NSString(string: url.absoluteString))
             return responseImg
+        }
+    }
+}
+
+extension ImageLoaderService: NSCacheDelegate{
+    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
+        if let img = obj as? UIImage {
+            print(img.size)
         }
     }
 }
